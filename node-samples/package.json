@@ -1,0 +1,16 @@
+{
+  "name": "ukef-enablement-day-samples",
+  "version": "1.0.0",
+  "description": "Sample code for UKEF AI Enablement Day exercises",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/exercise01/coverCalculator.test.js test/exercise02/aggregator.test.js",
+    "run:exercise01": "node src/exercise01/coverCalculator.js",
+    "run:exercise01:submission": "node src/exercise01/submissionProcessor.js",
+    "run:exercise02": "node src/exercise02/aggregator.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

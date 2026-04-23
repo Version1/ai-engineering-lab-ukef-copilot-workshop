@@ -1,0 +1,27 @@
+# mcp-stdin-server/ — Node.js stdio MCP server
+# Compiled output
+dist/
+
+# Dependencies
+node_modules/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor directories
+.vscode/
+.idea/
+.claude/
+
+# TypeScript cache
+*.tsbuildinfo

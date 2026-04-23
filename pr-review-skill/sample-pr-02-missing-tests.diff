@@ -1,0 +1,21 @@
+diff --git a/src/validator.js b/src/validator.js
+new file mode 100644
+index 0000000..9a8b7c6
+--- /dev/null
++++ b/src/validator.js
+@@ -0,0 +1,25 @@
++/**
++ * Validate submission payload and return cleaned data or throw.
++ */
++export function validateSubmission(payload) {
++  if (!payload || typeof payload !== "object") {
++    throw new Error("Invalid payload");
++  }
++  const id = payload.id;
++  const amount = Number(payload.amount);
++  if (Number.isNaN(amount) || amount < 0) {
++    throw new Error("Invalid amount");
++  }
++  return { id, amount };
++}
++

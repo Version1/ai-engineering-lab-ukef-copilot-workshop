@@ -1,0 +1,22 @@
+diff --git a/src/calculator.js b/src/calculator.js
+index 1a2b3c4..5d6e7f8 100644
+--- a/src/calculator.js
++++ b/src/calculator.js
+@@ -1,6 +1,15 @@
+-function calc(r, cfg) {
+-  const thr = cfg.t ?? 50;
+-  if (r.v > thr) return r.v * cfg.m;
+-  return r.v * 0.9;
++/**
++ * Apply discount based on risk band and threshold.
++ */
++function calc(r, cfg) {
++  const thr = cfg.t ?? 50;
++  const mult = r.band === "high" ? 1.0 : 0.9;
++  if (r.v > thr) {
++    return r.v * cfg.m * mult;
++  }
++  return r.v * 0.9;
+ }
+
+ module.exports = { calc };

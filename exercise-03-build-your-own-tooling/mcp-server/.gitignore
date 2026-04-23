@@ -1,0 +1,18 @@
+# mcp-server root
+# Code and build artifacts live in mcp-stdin-server/ (Node.js) and mcp-http-server/ (Python).
+# Subfolders have their own .gitignore for dist/, node_modules/, venv/, etc.
+# This file catches stray artifacts if commands are run from the wrong directory.
+
+*.log
+.DS_Store
+Thumbs.db
+.env
+.env.local
+.env.*.local
+
+# Stray build/dependency dirs at root
+node_modules/
+dist/
+venv/
+.venv/
+__pycache__/

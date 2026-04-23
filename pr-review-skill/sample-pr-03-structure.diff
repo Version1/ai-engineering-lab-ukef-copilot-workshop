@@ -1,0 +1,21 @@
+diff --git a/src/processor.py b/src/processor.py
+index 1a2b3c4..5d6e7f8 100644
+--- a/src/processor.py
++++ b/src/processor.py
+@@ -1,4 +1,28 @@
+ def process_records(records, config):
++    """Process records and apply rules based on type and threshold."""
+     result = []
+     for r in records:
++        if r.get("type") == "A":
++            threshold = config.get("threshold", 0)
++            if r.get("score", 0) > threshold:
++                value = r["value"] * config["multiplier"]
++                if config.get("adjust"):
++                    value = value * (1 + r.get("adjust_factor", 0))
++                result.append({"id": r["id"], "value": value, "processed": True})
++            else:
++                result.append({"id": r["id"], "value": r["value"], "processed": False})
++        elif r.get("type") == "B":
++            result.append({"id": r["id"], "value": r["value"], "processed": False})
+     return result
