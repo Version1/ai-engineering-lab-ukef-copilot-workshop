@@ -28,31 +28,79 @@ You also need the MCP server built and ready. See [SETUP.md](SETUP.md) for full 
 
 ---
 
-## Project structure
+## MCP server structure
+
+The MCP servers live in the sibling `../mcp-server/` folder (one level up from this folder). There are two server implementations — both expose the same tools and read from the same standards files:
 
 ```
-mcp-exercises/
-├── README.md          ← This file
-├── SETUP.md           ← MCP server setup and toggle instructions (START HERE)
+mcp-server/
+├── mcp-stdin-server/          ← stdio transport (Node.js / TypeScript)
+│   ├── src/
+│   │   ├── index.ts           ← MCP server entry point, tool definitions
+│   │   └── standards.ts       ← Loads and queries the standards files
+│   ├── dist/                  ← Compiled output (generated after npm run build)
+│   │   └── index.js           ← The file your assistant actually runs
+│   ├── package.json
+│   └── tsconfig.json
 │
-├── exercises/         ← One file per exercise, covering both languages
+├── mcp-http-server/           ← HTTP transport (Python)
+│   ├── server.py              ← FastAPI/MCP HTTP server entry point
+│   ├── standards_loader.py    ← Loads and queries the standards files
+│   └── requirements.txt
+│
+└── standards/                 ← The actual coding standards content (Markdown)
+    ├── nodejs/
+    │   ├── naming.md
+    │   ├── patterns.md
+    │   ├── structure.md
+    │   └── quick-reference.md
+    └── python/
+        ├── naming.md
+        ├── patterns.md
+        ├── structure.md
+        └── quick-reference.md
+```
+
+Both servers expose four tools to your AI assistant:
+
+| Tool | What it does |
+|---|---|
+| `list_categories` | Lists all available standard categories and languages |
+| `get_guidelines` | Returns the full guidelines for a specific category |
+| `search_guidelines` | Searches standards content by keyword |
+| `get_quick_reference` | Returns the quick-reference summary for a language |
+
+See [SETUP.md](SETUP.md) for instructions on building and connecting the servers.
+
+---
+
+## What's in this workshop folder
+
+This is the folder you will work in throughout the exercises. It contains the exercises themselves and the starter code you will edit — it does **not** contain the MCP server (that lives in `../mcp-server/`, covered above).
+
+```
+mcp-exercises/               ← You are here
+├── README.md                ← This file
+├── SETUP.md                 ← MCP server setup and toggle instructions (START HERE)
+│
+├── exercises/               ← Step-by-step exercise guides, one file per exercise
 │   ├── 01-naming.md
 │   ├── 02-patterns.md
 │   ├── 03-structure.md
 │   ├── 04-refactor.md
 │   └── 05-full-feature.md
 │
-├── nodejs-starter/    ← Express/TypeScript starter code
+├── nodejs-starter/          ← Starter code for Node.js / TypeScript exercises
 │   └── src/features/users/
-│       ├── user-service.ts   ← Edit during exercises 1 & 2
-│       ├── user-routes.ts    ← Reference during exercise 3
-│       └── bad-code.ts       ← Refactor target for exercise 4
+│       ├── user-service.ts  ← Edit during exercises 1 & 2
+│       ├── user-routes.ts   ← Reference during exercise 3
+│       └── bad-code.ts      ← Refactor target for exercise 4
 │
-└── python-starter/    ← FastAPI starter code
+└── python-starter/          ← Starter code for Python / FastAPI exercises
     └── app/users/
-        ├── user_service.py   ← Edit during exercises 1 & 2
-        ├── user_routes.py    ← Reference during exercise 3
-        └── bad_code.py       ← Refactor target for exercise 4
+        ├── user_service.py  ← Edit during exercises 1 & 2
+        ├── user_routes.py   ← Reference during exercise 3
+        └── bad_code.py      ← Refactor target for exercise 4
 ```
 
 ---
@@ -86,6 +134,8 @@ Total: ~70 minutes with discussion.
 ## Quick Setup Checklist
 
 - [ ] MCP server built: `cd ../mcp-server/mcp-stdin-server && npm install && npm run build`
+- [ ] `.vscode/` folder created inside `mcp-exercises/` (this folder is git-ignored — you must create it manually)
+- [ ] `.vscode/mcp.json` file created and filled in with your absolute path (see SETUP.md — VS Code section)
 - [ ] Absolute path added to the config file for your assistant (see SETUP.md)
 - [ ] MCP server shows as connected in your assistant
 - [ ] Test: ask your AI "what coding standards are available?" — it should call `list_categories`
