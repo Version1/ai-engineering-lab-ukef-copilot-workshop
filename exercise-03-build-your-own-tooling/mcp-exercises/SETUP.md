@@ -19,9 +19,11 @@ You only need one. Enable the one you want and disable the other. Both expose th
 
 ---
 
-## Step 1: stdio server (Node.js)
+## Step 1: build and start your chosen server
 
-If using `coding-standards-stdio`, build it once:
+### Option A — stdio server (Node.js, recommended)
+
+Build it once from the `mcp-exercises/` folder:
 
 ```bash
 cd ../mcp-server/mcp-stdin-server
@@ -31,9 +33,62 @@ npm run build
 
 Verify it worked — you should see a `dist/` folder inside `mcp-server/mcp-stdin-server/` containing `index.js`.
 
+Your editor spawns this process automatically when MCP is enabled. No separate terminal needed.
+
 ---
 
-## Step 2: find your absolute path
+### Option B — HTTP server (Python)
+
+The HTTP server runs as a separate process on port 8000. Start it before your editor connects.
+
+**Step 1 — Create and activate a Python virtual environment:**
+
+Windows (PowerShell):
+```powershell
+cd ../mcp-server/mcp-http-server
+python -m venv venv
+.\venv\Scripts\Activate.ps1
+```
+
+Mac / Linux:
+```bash
+cd ../mcp-server/mcp-http-server
+python3 -m venv venv
+source venv/bin/activate
+```
+
+When activated, your prompt will show `(venv)`.
+
+**Step 2 — Install dependencies:**
+```bash
+pip install -r requirements.txt
+```
+
+**Step 3 — Start the server:**
+```bash
+python server.py
+```
+
+You should see:
+```
+INFO:     Started server process
+INFO:     Uvicorn running on http://0.0.0.0:8000
+```
+
+Leave this terminal open while you work. Press `Ctrl+C` to stop it.
+
+**The MCP endpoint is at:** `http://localhost:8000/mcp`
+
+> Troubleshooting:
+> - `python: command not found` — use `python3` instead
+> - `ModuleNotFoundError` — run `pip install -r requirements.txt` with the venv activated
+> - `Address already in use` — port 8000 is taken; stop the other process or change the port in `server.py`
+
+---
+
+## Step 2: find your absolute path (stdio only)
+
+> Skip this step if you are using the HTTP server — you will use `http://localhost:8000/mcp` as the URL instead.
 
 You need the full absolute path to `dist/index.js` on your machine.
 
@@ -57,7 +112,9 @@ Copy this path. You will paste it into the config file for your assistant below.
 
 ### Setup (one time)
 
-Open `.cursor/mcp.json` in this folder and replace `YOUR_ABSOLUTE_PATH` with your path:
+Open `.cursor/mcp.json` in this folder.
+
+**If using the stdio server** — replace the path with your absolute path from Step 2:
 
 ```json
 {
@@ -71,6 +128,18 @@ Open `.cursor/mcp.json` in this folder and replace `YOUR_ABSOLUTE_PATH` with you
 ```
 
 > Windows note: Use double backslashes `\\` in JSON, or forward slashes `/` — both work.
+
+**If using the HTTP server** — make sure the Python server is running first (Step 1B), then use:
+
+```json
+{
+  "mcpServers": {
+    "coding-standards": {
+      "url": "http://localhost:8000/mcp"
+    }
+  }
+}
+```
 
 Restart Cursor once after saving. The server should appear in Settings → Cursor Settings → MCP.
 
@@ -104,7 +173,25 @@ You should see the AI call the `list_categories` tool and return a list of langu
 
 ### Setup (one time)
 
-Open `.vscode/mcp.json` in this folder and replace `YOUR_ABSOLUTE_PATH`:
+VS Code reads MCP configuration from a `.vscode/mcp.json` file in your workspace folder. This folder is excluded from git in this repo, so **you must create it manually**.
+
+**Step 1 — Create the folder and file:**
+
+Windows (PowerShell), run from the `mcp-exercises/` folder:
+```powershell
+New-Item -ItemType Directory -Force -Path .vscode
+New-Item -ItemType File -Path .vscode\mcp.json
+```
+
+Mac / Linux:
+```bash
+mkdir -p .vscode
+touch .vscode/mcp.json
+```
+
+**Step 2 — Paste this content into `.vscode/mcp.json`:**
+
+If using the **stdio server**, replace the path with your absolute path from Step 2:
 
 ```json
 {
@@ -113,6 +200,21 @@ Open `.vscode/mcp.json` in this folder and replace `YOUR_ABSOLUTE_PATH`:
       "type": "stdio",
       "command": "node",
       "args": ["C:/Users/yourname/projects/.../mcp-server/mcp-stdin-server/dist/index.js"]
+    }
+  }
+}
+```
+
+> Windows note: Use double backslashes `\\` or forward slashes `/` in the path — both work in JSON.
+
+If using the **HTTP server**, make sure the Python server is running first (Step 1B), then use:
+
+```json
+{
+  "servers": {
+    "coding-standards": {
+      "type": "http",
+      "url": "http://localhost:8000/mcp"
     }
   }
 }
@@ -127,6 +229,8 @@ Use this during exercises and demos — you will toggle MCP off and on to compar
 Option A — edit the config file (quickest):
 
 Disable MCP — add `"disabled": true` to the server entry and save:
+
+stdio example:
 ```json
 {
   "servers": {
@@ -134,6 +238,19 @@ Disable MCP — add `"disabled": true` to the server entry and save:
       "type": "stdio",
       "command": "node",
       "args": ["..."],
+      "disabled": true
+    }
+  }
+}
+```
+
+HTTP example:
+```json
+{
+  "servers": {
+    "coding-standards": {
+      "type": "http",
+      "url": "http://localhost:8000/mcp",
       "disabled": true
     }
   }
@@ -168,7 +285,9 @@ Copilot will show a tool call icon and call `list_categories`.
 
 ### Setup (one time)
 
-Open `.mcp.json` in this folder and replace `YOUR_ABSOLUTE_PATH`:
+Open `.mcp.json` in this folder.
+
+**If using the stdio server** — replace the path with your absolute path from Step 2:
 
 ```json
 {
@@ -181,9 +300,21 @@ Open `.mcp.json` in this folder and replace `YOUR_ABSOLUTE_PATH`:
 }
 ```
 
+**If using the HTTP server** — make sure the Python server is running first (Step 1B), then use:
+
+```json
+{
+  "mcpServers": {
+    "coding-standards": {
+      "url": "http://localhost:8000/mcp"
+    }
+  }
+}
+```
+
 Claude Code automatically reads `.mcp.json` from the current directory when you run `claude`.
 
-Alternatively, register it globally (stays active across all projects):
+Alternatively, register the stdio server globally (stays active across all projects):
 ```bash
 claude mcp add coding-standards -- node /absolute/path/to/mcp-server/mcp-stdin-server/dist/index.js
 ```
@@ -242,8 +373,10 @@ You should see Claude call `list_categories` and list the languages and categori
 
 | Problem | Solution |
 |---|---|
-| MCP server not found | Check the absolute path in the config file — copy it exactly from Step 2 |
-| Server shows "failed to connect" | Run `node /your/absolute/path/to/dist/index.js` directly — if it errors, rebuild with `npm run build` |
+| MCP server not found (stdio) | Check the absolute path in the config file — copy it exactly from Step 2 |
+| Server shows "failed to connect" (stdio) | Run `node /your/absolute/path/to/dist/index.js` directly — if it errors, rebuild with `npm run build` |
+| HTTP server not reachable | Make sure you started the Python server first (`python server.py`) and it is still running in a terminal |
+| HTTP server — `Address already in use` | Port 8000 is taken; stop the other process or change the port in `server.py` |
 | No tool calls visible | Make sure MCP is enabled AND you are using Agent/tool-calling mode |
 | Windows path errors | Use forward slashes `/` instead of backslashes `\` in JSON config |
 | Changes not taking effect (Cursor) | Toggle the server OFF then ON again in settings |
