@@ -8,9 +8,10 @@ With the MCP server, it reads your team's exact folder structure rules and place
 
 ## How to run this exercise
 
-1. Open `mcp-exercises/` as your workspace root in your editor (not just a parent folder). This allows the AI to index the full file tree and understand the existing project structure. If you open a parent folder instead, the AI may not see the starter project layout it needs to follow.
+1. Make sure your editor has `mcp-exercises/` open as (or within) your workspace so the AI can
+   index the full file tree and understand the existing project structure.
    - Cursor: File → Open Folder → select `mcp-exercises/`
-   - VS Code: File → Open Folder → select `mcp-exercises/`, then switch Copilot Chat to Agent mode so `@workspace` context is available automatically
+   - VS Code: ensure Copilot Chat is in Agent mode so `@workspace` context is available automatically
 2. Disable MCP — see [SETUP.md](../SETUP.md) for your assistant
 3. Paste the prompt below into your AI assistant chat
 4. Note WHERE the AI creates the new files and what it names them
@@ -82,12 +83,12 @@ File name: `orders-service.ts` (kebab-case — matches the naming standard)
 
 The AI may also add `orders-service.test.ts` in the same folder — test co-location is in the structure standard.
 
-### Talking points
+### Key insight
 
-> "Without standards, developers make different decisions on different days.
-> After six months you end up with some features in `services/`, some in `features/`,
-> some files PascalCase and some kebab-case. That inconsistency is expensive to fix.
-> The MCP server makes the right structure the path of least resistance."
+Without standards, developers make different decisions on different days.
+After six months you end up with some features in `services/`, some in `features/`,
+some files PascalCase and some kebab-case. That inconsistency is expensive to fix.
+The MCP server makes the right structure the path of least resistance.
 
 ---
 
@@ -128,7 +129,7 @@ Also watch for:
 ### What to watch for WITH MCP
 
 The AI calls `get_guidelines("python", "structure")`.
-It reads: *"Features go in src/my_project/features/{feature_name}/. Each feature has __init__.py, service.py, models.py, exceptions.py."*
+It reads: *"New features go in a dedicated directory under the app package. Each feature is self-contained with its own `__init__.py`, `service.py`, `models.py`, and `exceptions.py`."*
 
 Expected output:
 
@@ -148,9 +149,9 @@ python-starter/app/
 
 The `__init__.py` will use explicit exports, not `from .service import *`.
 
-### Talking points
+### Key insight
 
-> "In Python, where you put files also affects whether they can be imported correctly.
-> The src-layout convention (which our standards enforce) prevents a common bug where
-> Python accidentally imports from the working directory instead of the installed package.
-> The AI does not know your team chose src-layout without the MCP server telling it."
+In Python, where you put files affects whether they can be imported correctly.
+The `__init__.py` files and feature-scoped layout (which the standards enforce) keep each feature
+self-contained and importable. Without the MCP server, the AI does not know your team's folder
+conventions and will create an inconsistent structure.

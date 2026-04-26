@@ -1,9 +1,10 @@
 ﻿# Exercise 2: code patterns
 
 Time: ~15 minutes
-Goal: The most visually dramatic exercise. Without standards, the AI installs forbidden
-libraries and uses deprecated async patterns. With the MCP server, it reads your team's
-approved patterns and follows them exactly.
+Goal: Show that without standards, the AI makes reasonable but incorrect guesses about library
+choices and error handling patterns. The clearest difference is the error handling: the AI will
+use raw throws or generic exceptions, while the MCP server guides it to use your team's Result
+pattern (Node.js) or custom exception classes (Python).
 
 ---
 
@@ -115,12 +116,12 @@ What changed:
 - `Result<UserProfile>` return type — no `any`, no raw throws
 - Caller must handle both the success and error case explicitly
 
-### Talking points
+### Key insight
 
-> "Axios has been the community default for years, so it is deeply embedded in AI training data.
-> The team has decided to use native fetch — a perfectly valid team decision. Without the MCP server,
-> the AI cannot know that. It will add a dependency your team does not want, and you might not catch it
-> until code review. The MCP server enforces that decision automatically on every code generation."
+The team has decided to use native `fetch` — a valid team decision that the AI cannot know without context.
+More importantly, notice the error handling pattern: the AI uses `throw new Error(...)` or returns `null`
+for expected failures. The MCP server guides it to the Result pattern instead, which forces every caller
+to handle both outcomes explicitly. That is the more impactful change.
 
 ---
 
@@ -138,7 +139,7 @@ The function should call the API, handle errors, and return the user profile dat
 ### What to watch for WITHOUT MCP
 
 ```python
-# The AI will almost certainly use requests (synchronous, forbidden):
+# The AI may use requests (synchronous, forbidden) or aiohttp — both are wrong:
 import requests
 
 def fetch_user_profile(user_id: str) -> dict:
@@ -210,8 +211,8 @@ What changed:
 - Specific exception types `HTTPStatusError`, `RequestError` — no bare except
 - `@dataclass(frozen=True)` return type — typed, immutable domain object
 
-### Talking points
+### Key insight
 
-> "This exercise shows two things at once: the AI chose the wrong library AND the wrong async pattern.
-> Both are reasonable defaults based on training data. Both violate your team's standards.
-> With the MCP server, the AI reads the actual standards document and follows it — no guessing."
+The AI chose the wrong HTTP library and possibly the wrong async pattern — both are reasonable
+defaults from training data, and both violate your team's standards. With the MCP server, the AI
+reads the actual standards document and follows it — no guessing.

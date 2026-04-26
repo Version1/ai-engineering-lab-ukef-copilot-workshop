@@ -51,7 +51,7 @@ export function userById(id: string): User | undefined { ... }
 export function GetUserById(id: string): User | undefined { ... }
 ```
 
-Red flags to point out to participants:
+Red flags:
 - `getUserByID` — the standard says `getUserById` (camelCase `Id`, not `ID`)
 - No return type annotation (if strict mode is off)
 - `getUsers()` — should start with a verb that better describes the action (`listUsers` or `getAllUsers`)
@@ -78,11 +78,11 @@ What changed:
 - `listUsers` — verb prefix, clearer intent than `getUsers`
 - Return types explicitly annotated
 
-### Talking points
+### Key insight
 
-> "The AI knows that functions should have verb prefixes — that is general JavaScript knowledge.
-> But it does not know *your team's* specific preferences: `Id` vs `ID`, `listUsers` vs `getUsers`,
-> whether return types are required. The MCP server makes those team-specific decisions explicit."
+The AI knows that functions should have verb prefixes — that is general JavaScript knowledge.
+But it does not know *your team's* specific preferences: `Id` vs `ID`, `listUsers` vs `getUsers`,
+whether return types are required. The MCP server makes those team-specific decisions explicit.
 
 ---
 
@@ -98,30 +98,29 @@ Also add a function that returns all users.
 
 ### What to watch for WITHOUT MCP
 
+> **Note:** Modern models often produce correct snake_case for Python. Exact output varies by model. Focus on the team-specific red flags below regardless of which variant the AI produces.
+
 ```python
-# Common AI choices without standards guidance:
+# Possible AI choices without standards guidance:
 
-# Option A — camelCase (wrong for Python!)
-def getUserById(id: str) -> dict:
-    return next((u for u in MOCK_DB if u["id"] == id), None)
-
-def getUsers() -> list:
-    return MOCK_DB
-
-# Option B — missing type hints entirely
+# Option A — missing type hints entirely
 def get_user(id):
     return next((u for u in MOCK_DB if u["id"] == id), None)
 
-# Option C — correct snake_case but vague name
-def user_by_id(user_id: str):  # no return type, no verb
+# Option B — correct snake_case but vague name, no return type
+def user_by_id(user_id: str):  # no verb prefix, no return type
     ...
+
+# Option C — bare dict return type, no verb prefix
+def get_user_by_id(id: str) -> dict:
+    return next((u for u in MOCK_DB if u["id"] == id), None)
 ```
 
 Red flags:
-- `getUserById` — camelCase is wrong in Python; functions must be `snake_case`
 - Missing type hints on parameters and return value
 - No verb prefix (`user_by_id` instead of `get_user_by_id`)
-- Using `dict` return type instead of `dict[str, str]` (not specific enough)
+- Using bare `dict` return type instead of `dict[str, str]` (not specific enough)
+- `get_users()` instead of `list_users()` — verb choice is a team decision the AI cannot know
 
 ### What to watch for WITH MCP
 
@@ -143,8 +142,8 @@ What changed:
 - `list_users` — verb prefix, clearer than `get_users`
 - Full type hints on both parameters and return types
 
-### Talking points
+### Key insight
 
-> "Notice the AI used camelCase without MCP — that is because JavaScript conventions
-> are so dominant in AI training data that they bleed into Python code generation.
-> The MCP server enforces the language-specific rules your team has decided on."
+Even when the AI gets basic snake_case right, it does not know your team's specific preferences:
+the required verb prefix, mandatory type hints on return values, and `dict[str, str]` over a bare `dict`.
+The MCP server makes those team-specific decisions explicit regardless of which model you are using.

@@ -115,11 +115,11 @@ export class UserService {
 }
 ```
 
-### Talking points
+### Key insight
 
-> "Notice the AI found the magic numbers, the axios import, and the Result pattern — all from reading
-> the standards document. Without the server it could only apply general knowledge. The difference is
-> not that the AI is smarter; it is that it now has access to your team's decisions."
+Notice the AI found the magic numbers, the axios import, and the Result pattern — all from reading
+the standards document. Without the server it could only apply general knowledge. The difference is
+not that the AI is smarter; it is that it now has access to your team's decisions.
 
 ---
 
@@ -198,17 +198,11 @@ class UserService:
     def __init__(self, db: Database) -> None:
         self._db = db
 
-    async def get_user_by_id(self, user_id: str) -> dict[str, str]:
-        async with httpx.AsyncClient() as client:
-            try:
-                response = await client.get(f"/api/users/{user_id}")
-                response.raise_for_status()
-                return response.json()
-            except httpx.HTTPStatusError as exc:
-                raise UserNotFoundError(user_id) from exc
-            except httpx.RequestError as exc:
-                logger.error("request_failed", user_id=user_id, error=str(exc))
-                raise
+    async def get_user_by_id(self, user_id: str) -> dict[str, str] | None:
+        user = await self._db.find_by_id("users", user_id)
+        if not user:
+            raise UserNotFoundError(user_id)
+        return user
 
     async def login_user(self, email: str, password: str) -> LoginResult:
         users = await self._db.get_all_users()
@@ -223,9 +217,9 @@ class UserService:
         return LoginResult(token="mock-token-abc123", expires_in=SESSION_TIMEOUT_SECONDS)
 ```
 
-### Talking points
+### Key insight
 
-> "Python is particularly interesting because camelCase is so common in JavaScript that AI models
-> sometimes write Python functions in camelCase. The MCP server explicitly corrects that.
-> Also notice the structlog keyword-argument logging pattern — the AI would never know to use
-> that specific library without the standards document."
+Notice the structlog keyword-argument logging pattern — the AI would never know to use
+that specific library without the standards document. The same applies to the custom exception
+classes and dependency injection: these are team decisions that no model can infer from general
+training data. The MCP server makes them explicit.
