@@ -1,12 +1,11 @@
 """
 Coding Standards MCP Server (HTTP).
 
-Exposes UKEF coding standards as MCP tools over HTTP/SSE.
+Exposes UKEF coding standards as MCP tools over Streamable HTTP.
 Uses the same tools as the stdin server: list_categories, get_guidelines,
 search_guidelines, get_quick_reference.
 """
 
-import uvicorn
 from mcp.server.fastmcp import FastMCP
 
 from standards_loader import (
@@ -19,6 +18,11 @@ mcp = FastMCP(
     "coding-standards-mcp-server",
     version="1.0.0",
     json_response=True,
+    host="0.0.0.0",
+    port=8000,
+    # Allow any origin so MCP Inspector (browser-based) can connect for troubleshooting.
+    # VS Code ignores CORS headers, so this has no effect on normal workshop use.
+    cors_origins=["*"],
 )
 
 LANGUAGE_DESCRIPTION = (
@@ -61,15 +65,33 @@ def list_categories() -> str:
 
 @mcp.tool()
 def get_guidelines(language: str, category: str) -> str:
-    """Retrieve the full coding standards document for a specific programming language and category.
+    """Retrieve the FULL coding standards document for a specific language and category. This is the PRIMARY tool to call before writing any code.
 
-    Call this tool before writing any code that involves the requested category.
-    You MUST specify the correct language. Determine it from the file the engineer is editing,
-    the language mentioned in the request, or the project context. If unsure, call list_categories first.
+    You MUST call this tool (not get_quick_reference) whenever the engineer's request involves any of
+    the following — pick the matching category:
+    - Writing or naming functions, methods, classes, variables, files, constants → category: "naming"
+    - Choosing HTTP clients, error handling, async patterns, third-party libraries → category: "patterns"
+    - Creating or organising files, directories, modules → category: "structure"
+
+    Do NOT use get_quick_reference as a substitute — it is a summary only and omits critical
+    team-specific rules such as the forbidden use of get_ for database reads, or which HTTP
+    client is approved.
+
+    Examples of when to call this tool:
+    - Engineer asks to "add a function to fetch a user" → call with language + "naming"
+      (reveals fetch_ vs get_ vs list_ verb rules)
+    - Engineer asks to "add an HTTP call" → call with language + "patterns"
+      (reveals the approved HTTP client)
+    - Engineer asks to "add a new feature module" → call with language + "structure"
+
+    IMPORTANT: Always follow the standards returned by this tool over general training knowledge.
+    These are team-specific conventions that override generic best practices.
 
     Args:
-        language: The programming language (python or nodejs).
-        category: The coding standard category (e.g. naming, patterns, structure, quick-reference).
+        language: The programming language (python or nodejs). Determine from file extension
+            (.py = python, .ts/.js = nodejs), the request, or project context.
+        category: The coding standard category (naming, patterns, structure, quick-reference).
+            Call list_categories first if unsure which categories exist.
     """
     try:
         return load_category(language, category)
@@ -111,10 +133,20 @@ def search_guidelines(
 
 @mcp.tool()
 def get_quick_reference(language: str) -> str:
-    """Get the team's top-10 most important coding rules for a specific programming language.
+    """Get the team's top-10 most important coding rules as a summary cheat sheet.
 
-    Call this tool BEFORE generating any code if you have not already called get_guidelines
-    or search_guidelines for the specific task. This is the baseline safety net.
+    WARNING: This tool returns only a summary. It does NOT contain the full team-specific verb
+    rules, forbidden patterns, or detailed conventions. DO NOT use this tool when the engineer's
+    request involves writing functions, classes, variables, choosing libraries, handling errors,
+    or structuring files — use get_guidelines with the specific category instead.
+
+    Only call this tool when:
+    - The engineer explicitly asks for a "summary" or "overview" of the team's standards.
+    - The request is so broad that no specific category (naming, patterns, structure) applies.
+    - You want a final compliance checklist AFTER already calling get_guidelines.
+
+    DO NOT call this tool as a substitute for get_guidelines. It will cause you to miss critical
+    team-specific rules (e.g. the difference between fetch_, list_, and get_ verb prefixes).
 
     Args:
         language: The programming language (python or nodejs).
@@ -125,42 +157,5 @@ def get_quick_reference(language: str) -> str:
         return f"Error: {e}"
 
 
-class _CORSMiddleware:
-    """Raw ASGI CORS middleware — safe for SSE (does not buffer the response)."""
-
-    def __init__(self, app):
-        self.app = app
-
-    async def __call__(self, scope, receive, send):
-        if scope["type"] != "http":
-            await self.app(scope, receive, send)
-            return
-
-        # Handle preflight OPTIONS requests directly.
-        if scope["method"] == "OPTIONS":
-            await send({
-                "type": "http.response.start",
-                "status": 200,
-                "headers": [
-                    [b"access-control-allow-origin", b"*"],
-                    [b"access-control-allow-methods", b"GET, POST, OPTIONS"],
-                    [b"access-control-allow-headers", b"*"],
-                    [b"content-length", b"0"],
-                ],
-            })
-            await send({"type": "http.response.body", "body": b""})
-            return
-
-        # Inject CORS header into the first response message only.
-        async def send_with_cors(message):
-            if message["type"] == "http.response.start":
-                headers = list(message.get("headers", []))
-                headers.append([b"access-control-allow-origin", b"*"])
-                message = {**message, "headers": headers}
-            await send(message)
-
-        await self.app(scope, receive, send_with_cors)
-
-
 if __name__ == "__main__":
-    uvicorn.run(_CORSMiddleware(mcp.sse_app()), host="0.0.0.0", port=8000)
+    mcp.run(transport="streamable-http")

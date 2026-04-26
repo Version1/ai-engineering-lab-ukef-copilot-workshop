@@ -118,9 +118,10 @@ def get_user_by_id(id: str) -> dict:
 
 Red flags:
 - Missing type hints on parameters and return value
-- No verb prefix (`user_by_id` instead of `get_user_by_id`)
+- No verb prefix (`user_by_id` instead of `fetch_user_by_id`)
 - Using bare `dict` return type instead of `dict[str, str]` (not specific enough)
-- `get_users()` instead of `list_users()` — verb choice is a team decision the AI cannot know
+- `get_user_by_id()` instead of `fetch_user_by_id()` — the team mandates `fetch_` for DB/store reads
+- `get_users()` or `get_all_users()` instead of `list_users()` — the team mandates `list_` for collections
 
 ### What to watch for WITH MCP
 
@@ -130,7 +131,7 @@ The tool returns: *"All functions use snake_case and start with a verb."*
 Expected output:
 
 ```python
-def get_user_by_id(user_id: str) -> dict[str, str] | None:
+def fetch_user_by_id(user_id: str) -> dict[str, str] | None:
     return next((user for user in MOCK_DB if user["id"] == user_id), None)
 
 def list_users() -> list[dict[str, str]]:
@@ -138,12 +139,18 @@ def list_users() -> list[dict[str, str]]:
 ```
 
 What changed:
-- `get_user_by_id` — snake_case, verb prefix, descriptive parameter name `user_id`
-- `list_users` — verb prefix, clearer than `get_users`
+- `fetch_user_by_id` — team rule: `fetch_` prefix for all DB/store reads, not `get_`
+- `list_users` — team rule: `list_` prefix for collections, not `get_all_users` or `get_users`
 - Full type hints on both parameters and return types
 
 ### Key insight
 
 Even when the AI gets basic snake_case right, it does not know your team's specific preferences:
-the required verb prefix, mandatory type hints on return values, and `dict[str, str]` over a bare `dict`.
-The MCP server makes those team-specific decisions explicit regardless of which model you are using.
+`fetch_` vs `get_` for DB reads, `list_` vs `get_all_` for collections, mandatory type hints on return values,
+and `dict[str, str]` over a bare `dict`. The MCP server makes those team-specific decisions explicit
+regardless of which model you are using.
+
+| | Without MCP | With MCP |
+|---|---|---|
+| Single record | `get_user_by_id()` | `fetch_user_by_id()` |
+| Collection | `get_users()` / `get_all_users()` | `list_users()` |
