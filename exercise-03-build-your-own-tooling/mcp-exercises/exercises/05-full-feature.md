@@ -17,8 +17,8 @@ first, then consults specific standards categories, producing fully compliant co
 6. Enable MCP and paste the same prompt again
 7. Compare the two outputs side by side
 
-This is the best exercise to run last because participants have now seen the individual rules
-in exercises 1–4 and can spot every decision the AI makes differently.
+This is the best exercise to run last. You will now recognise every individual decision the AI makes —
+from naming to structure to error handling — and see how the MCP server guides each one.
 
 ---
 
@@ -63,7 +63,7 @@ async function registerUser(data: any): Promise<User> {
 }
 ```
 
-What to point out:
+Things to look for:
 - PascalCase file names and function names where kebab-case is required
 - `any` types throughout — no proper interface definitions
 - Throws for expected errors — no Result pattern
@@ -127,12 +127,12 @@ export async function registerUser(
 }
 ```
 
-### Talking points
+### Key insight
 
-> "Count the tool calls — the AI made four calls to the MCP server before writing code.
-> It was not guessing. It was reading a specification. The result is code that a senior engineer
-> would be proud to merge, on the first attempt, without a single standards violation.
-> That is the value of connecting your coding standards to your AI assistant."
+Count the tool calls — the AI made four calls to the MCP server before writing code.
+It was not guessing. It was reading a specification. The result is code that a senior engineer
+would be proud to merge, on the first attempt, without a single standards violation.
+That is the value of connecting your coding standards to your AI assistant.
 
 ---
 
@@ -177,7 +177,7 @@ except Exception as e:  # too broad
     raise HTTPException(500, str(e))
 ```
 
-What to point out:
+Things to look for:
 - Using `raise HTTPException` inside the service layer — mixes HTTP concerns with business logic
 - `requests` imported (sync, forbidden)
 - Missing `@dataclass(frozen=True)` for domain objects
@@ -262,19 +262,19 @@ Notice:
 - Pydantic for the API model, dataclass for the domain object
 - `__init__.py` updated with explicit `__all__` — no wildcard exports
 
-### Talking points
+### Key insight
 
-> "The separation of `EmailAlreadyRegisteredError` from `HTTPException` is a subtle but important
-> point. The service layer does not know it is running inside a web framework — it just raises a
-> business exception. The route layer translates that into an HTTP 409 response.
-> The AI learned that pattern from your standards document, not from its general training."
+The separation of `EmailAlreadyRegisteredError` from `HTTPException` is a subtle but important
+point. The service layer does not know it is running inside a web framework — it just raises a
+business exception. The route layer translates that into an HTTP 409 response.
+The AI learned that pattern from your standards document, not from its general training.
 
 ---
 
-## Closing the Workshop
+## Wrapping Up
 
-After exercise 5, show participants the MCP server tool call log in their assistant.
-They will see exactly which tools were called, in what order, and what was returned.
+After this exercise, check the MCP server tool call log in your assistant.
+You will see exactly which tools were called, in what order, and what was returned.
 
 Key message: The AI did not become smarter. It became informed.
 

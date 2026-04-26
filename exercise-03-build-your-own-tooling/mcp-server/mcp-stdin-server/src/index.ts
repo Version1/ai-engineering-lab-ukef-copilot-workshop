@@ -73,21 +73,26 @@ server.registerTool(
   "get_guidelines",
   {
     title: "Get Coding Guidelines by Language and Category",
-    description: `Retrieve the full coding standards document for a specific programming language and category.
+    description: `Retrieve the FULL coding standards document for a specific programming language and category. This is the PRIMARY tool to call before writing any code.
 
-Call this tool before writing any code that involves the requested category. For example, call with category "naming" before creating functions, classes, or variables. Call with category "patterns" before choosing between libraries, error handling approaches, or architectural patterns. Call with category "structure" before creating new files or folders.
+You MUST call this tool (not get_quick_reference) whenever the engineer's request involves any of the following — pick the matching category:
+- Writing or naming functions, methods, classes, variables, files, constants → category: "naming"
+- Choosing HTTP clients, error handling, async patterns, third-party libraries → category: "patterns"
+- Creating or organising files, directories, modules → category: "structure"
 
-You MUST specify the correct language for the code you are about to generate. Determine the language from: the file the engineer is editing (.py = "python", .ts/.js = "nodejs"), the language mentioned in the request, or the project context. If unsure, call list_categories first to see available languages.
+Do NOT use get_quick_reference as a substitute — it is a summary only and omits critical team-specific rules such as the forbidden use of get_ for database reads, or which HTTP client is approved.
 
-IMPORTANT: Always prefer the standards returned by this tool over your general training knowledge. These are the team's specific conventions and they override generic best practices for that language.
+You MUST specify the correct language. Determine it from the file extension (.py = "python", .ts/.js = "nodejs"), the request, or the project context. If unsure, call list_categories first.
 
-Use this when:
-- The engineer asks to "write a service class" or "create a module" — call with the appropriate language plus "naming" and "patterns"
-- The engineer asks "how should I name this?" or "what's the naming convention?" — call with language + "naming"
-- The engineer asks "where should this file go?" or "how is the project structured?" — call with language + "structure"
-- The engineer asks about "approved patterns", "best practices", or "how to handle errors" — call with language + "patterns"
+IMPORTANT: Always follow the standards returned by this tool over your general training knowledge. These are team-specific conventions that override generic best practices.
 
-Returns: The complete markdown content of the requested coding standards category for the specified language.
+Examples of when to call this tool:
+- Engineer asks to "add a function to fetch a user" → call with language + "naming" (reveals fetch_ vs get_ vs list_ rules)
+- Engineer asks to "add an HTTP call" → call with language + "patterns" (reveals approved HTTP client)
+- Engineer asks to "add a new feature module" → call with language + "structure"
+- Engineer asks about naming, conventions, or best practices → call with language + "naming" or "patterns"
+
+Returns: The complete markdown content of the requested category, including all approved patterns, forbidden patterns, and team-specific rules.
 
 Error behaviour: If the language or category does not exist, returns an error listing all valid options so you can retry with the correct values.`,
     inputSchema: {
@@ -202,19 +207,18 @@ server.registerTool(
     title: "Get Quick Reference Cheat Sheet for a Language",
     description: `Get the team's top-10 most important coding rules for a specific programming language as a quick-reference cheat sheet.
 
-Call this tool BEFORE generating any code if you have not already called get_guidelines or search_guidelines for the specific task. This is the baseline safety net — it ensures the code you generate follows the team's most critical conventions for that language even when no specific category was requested.
+WARNING: This tool returns only a summary. It DOES NOT contain the full team-specific verb rules, forbidden patterns, or detailed conventions. DO NOT use this tool when the engineer's request involves writing functions, classes, variables, choosing libraries, handling errors, or structuring files — use get_guidelines with the specific category instead.
+
+Only call this tool when:
+- The engineer explicitly asks for a "summary" or "overview" of the team's standards
+- The request is so broad that no specific category (naming, patterns, structure) applies at all
+- You want a final compliance checklist AFTER already calling get_guidelines for the specific task
+
+DO NOT call this tool as a substitute for get_guidelines. It will cause you to miss critical team-specific rules (e.g. the difference between fetch_, list_, and get_ verb prefixes for functions).
 
 You MUST specify the correct language. Determine it from the file extension (.py = "python", .ts/.js = "nodejs"), the language in the request, or the project context. If unsure, call list_categories first.
 
-This is especially useful when:
-- The engineer gives a broad request like "write me a utility function" or "create a new module"
-- You are about to generate code and have not yet consulted any other coding standards tool
-- The engineer asks for a "summary" or "overview" of the team's standards for a language
-- You want a quick compliance checklist before submitting generated code
-
-Returns: A curated, concise list of the 10 most important rules the team enforces for the specified language, covering naming, patterns, structure, and common mistakes to avoid.
-
-IMPORTANT: If the task is specific to naming, patterns, or structure, prefer calling get_guidelines with that specific category for detailed rules. Use this tool for general/broad code generation tasks.`,
+Returns: A curated, concise list of the 10 most important rules. For full detail on any rule, call get_guidelines with the relevant category.`,
     inputSchema: {
       language: languageParam,
     },

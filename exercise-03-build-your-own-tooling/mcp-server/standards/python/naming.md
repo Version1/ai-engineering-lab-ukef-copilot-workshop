@@ -20,7 +20,29 @@ def getUserById(user_id: str): ...     # no camelCase
 def data(response: dict): ...          # vague, no verb
 ```
 
-Common verb prefixes: `get`, `set`, `create`, `update`, `delete`, `fetch`, `validate`, `parse`, `handle`, `is`, `has`, `should`, `can`.
+Common verb prefixes: `fetch`, `list`, `create`, `update`, `delete`, `validate`, `parse`, `handle`, `is`, `has`, `should`, `can`.
+
+### Team-specific verb rules
+
+| Verb | When to use |
+|---|---|
+| `fetch_` | Reading a single record from a database or in-memory store (e.g. `fetch_user_by_id`) |
+| `list_` | Returning a collection of records (e.g. `list_users`, `list_active_orders`) |
+| `get_` | **Forbidden for DB/store reads** — reserved for deriving computed values from data already in memory |
+
+ Approved patterns:
+```python
+def fetch_user_by_id(user_id: str) -> dict[str, str] | None: ...
+def list_users() -> list[dict[str, str]]: ...
+def get_full_name(user: dict[str, str]) -> str: ...   # derives a value, not a DB read
+```
+
+ Forbidden patterns:
+```python
+def get_user_by_id(user_id: str): ...   # use fetch_ for DB/store reads
+def get_users() -> list: ...            # use list_ for collections; bare list not allowed
+def getAllUsers() -> list: ...          # no camelCase
+```
 
 ## Classes
 

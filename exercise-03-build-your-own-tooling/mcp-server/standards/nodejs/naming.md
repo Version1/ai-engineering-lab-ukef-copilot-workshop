@@ -20,7 +20,29 @@ function get_user(id: string) {}      // no snake_case
 function data(response: unknown) {}   // vague, no verb
 ```
 
-Common verb prefixes: `get`, `set`, `create`, `update`, `delete`, `fetch`, `validate`, `parse`, `handle`, `is`, `has`, `should`, `can`.
+Common verb prefixes: `fetch`, `list`, `create`, `update`, `delete`, `validate`, `parse`, `handle`, `is`, `has`, `should`, `can`.
+
+### Team-specific verb rules
+
+| Verb | When to use |
+|---|---|
+| `fetch` | Reading a single record from a database or in-memory store (e.g. `fetchUserById`) |
+| `list` | Returning a collection of records (e.g. `listUsers`, `listActiveOrders`) |
+| `get` | **Forbidden for DB/store reads** — reserved for deriving computed values from data already in memory |
+
+✅ Approved patterns:
+```typescript
+function fetchUserById(id: string): Promise<User | null> {}
+function listUsers(): Promise<User[]> {}
+function getFullName(user: User): string {}   // derives a value, not a DB read
+```
+
+❌ Forbidden patterns:
+```typescript
+function getUserById(id: string): Promise<User> {}  // use fetch for DB/store reads
+function getUsers(): Promise<User[]> {}              // use list for collections
+function getAllUsers(): User[] {}                    // use list for collections
+```
 
 ## Classes and Interfaces
 
