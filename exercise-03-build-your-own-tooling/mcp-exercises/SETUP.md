@@ -380,3 +380,50 @@ You should see Claude call `list_categories` and list the languages and categori
 | No tool calls visible | Make sure MCP is enabled AND you are using Agent/tool-calling mode |
 | Windows path errors | Use forward slashes `/` instead of backslashes `\` in JSON config |
 | Changes not taking effect (Cursor) | Toggle the server OFF then ON again in settings |
+
+---
+
+## Debugging with MCP Inspector
+
+MCP Inspector is an interactive browser UI that lets you connect directly to either MCP server and call its tools manually — without involving your AI assistant. Use it to confirm the server is working, inspect tool inputs/outputs, and isolate whether a problem is with the server itself or with the editor integration.
+
+### Install and run
+
+No installation needed. Run it with `npx`:
+
+```bash
+npx @modelcontextprotocol/inspector
+```
+
+This starts a local web server and opens the Inspector UI in your browser at `http://localhost:5173`.
+
+### Connect to the stdio server
+
+1. In the Inspector UI, set **Transport** to `stdio`.
+2. Set **Command** to `node`.
+3. Set **Arguments** to the absolute path of `dist/index.js`, e.g.:
+   - Windows: `C:\Users\yourname\projects\...\mcp-server\mcp-stdin-server\dist\index.js`
+   - Mac/Linux: `/Users/yourname/projects/.../mcp-server/mcp-stdin-server/dist/index.js`
+4. Click **Connect**.
+
+> Make sure you have run `npm run build` inside `mcp-server/mcp-stdin-server/` first.
+
+### Connect to the HTTP server
+
+1. Start the Python server first (`python server.py` inside `mcp-server/mcp-http-server/`).
+2. In the Inspector UI, set **Transport** to `SSE`.
+3. Set **URL** to `http://localhost:8000/mcp`.
+4. Click **Connect**.
+
+### Calling tools manually
+
+Once connected, the Inspector lists all available tools on the left (`list_categories`, `get_guidelines`, `search_guidelines`, `get_quick_reference`). Click any tool, fill in the input fields, and click **Run** to see the raw response. This is the fastest way to verify the server is returning the correct standards content.
+
+### Common uses
+
+| Scenario | What to do in Inspector |
+|---|---|
+| Confirm server starts correctly | Connect and check the tools list appears |
+| Check a tool returns the right content | Run `get_guidelines` with `category: naming` and `language: nodejs` |
+| Debug a keyword search | Run `search_guidelines` with your search term and inspect the output |
+| Rule out editor config issues | If Inspector works but your editor doesn't, the problem is in the editor MCP config, not the server |
